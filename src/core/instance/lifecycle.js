@@ -56,6 +56,8 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // _update 方法的作用是把 VNode 渲染成真实的 DOM
+  // 首次渲染会调用, 数据更新会调用
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
@@ -66,6 +68,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
+      // __patch__() 把虚拟 DOM 转换成真实 DOM 挂载到 $el 中
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -187,6 +190,8 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
+      // _render() 用户传入的render函数或把模板编译成render函数,作用是生成虚拟dom
+      // _update() 对比两个虚拟dom的差异,并且把差异更新到真实DOM上
       vm._update(vm._render(), hydrating)
     }
   }

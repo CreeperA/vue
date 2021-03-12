@@ -13,7 +13,10 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
+  // 给Vue 实例增加 _init() 方法
+  // 合并 options / 初始化操作
   Vue.prototype._init = function (options?: Object) {
+    // 记录Vue 实例
     const vm: Component = this
     // a uid
     vm._uid = uid++
@@ -27,8 +30,10 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
+    // 如果是 Vue 实例不需要被 observe
     vm._isVue = true
     // merge options
+    // 合并 options
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
@@ -36,6 +41,7 @@ export function initMixin (Vue: Class<Component>) {
       initInternalComponent(vm, options)
     } else {
       vm.$options = mergeOptions(
+        // 把用户传入的 options 跟构造函数初始化的 options 进行合并
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -49,13 +55,23 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
+    // vm 的生命周期相关变量初始化
+    // $children/$parent/$root/$refs
     initLifecycle(vm)
+    // vm 的事件监听初始化, 父组件绑定在当前组件上的事件
     initEvents(vm)
+    // vm 的编译 render 初始化
+    // $slots/$scopeSlots/_c/$createElement/$attrs/$listeners
     initRender(vm)
+    // beforeCreate 生命钩子的回调
     callHook(vm, 'beforeCreate')
+    // 把inject 的乘员注入到 vm 上
     initInjections(vm) // resolve injections before data/props
+    // 初始化 Vue 实例的状态, vm 的_props/methods/_data/computed/watch
     initState(vm)
+    // 初始化 provide
     initProvide(vm) // resolve provide after data/props
+    // created 生命钩子的回调
     callHook(vm, 'created')
 
     /* istanbul ignore if */
