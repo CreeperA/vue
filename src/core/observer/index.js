@@ -227,20 +227,26 @@ export function defineReactive (
  * already exist.
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 判断目标对象是否是undefined或原始值
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 判断target是否是数组且key是否是合法的索引
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
+    // 通过 splice 对key位置的元素进行替换
+    // splice 在 array.js 进行了响应化的处理
     target.splice(key, 1, val)
     return val
   }
+  // 如果 key 在对象中已经存在直接赋值
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
+  // 获取 target 中的 observer 对象
   const ob = (target: any).__ob__
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -249,11 +255,14 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // 如果 ob 不存在, target 不是响应式对象,直接赋值
   if (!ob) {
     target[key] = val
     return val
   }
+  // 把 key 设置为响应式属性
   defineReactive(ob.value, key, val)
+  // 发送通知
   ob.dep.notify()
   return val
 }
@@ -267,11 +276,15 @@ export function del (target: Array<any> | Object, key: any) {
   ) {
     warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 判断是否为数组, 以及 key 是否合法
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // 如果是数组通过 splice 删除
+    // splice 不是数组的原生方法, 是重写做过响应式处理的
     target.splice(key, 1)
     return
   }
   const ob = (target: any).__ob__
+  // target 如果是 Vue 实例或者 $data 对象, 直接返回
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid deleting properties on a Vue instance or its root $data ' +
@@ -279,13 +292,16 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 如果 target 对象 没有 key 属性则直接返回
   if (!hasOwn(target, key)) {
     return
   }
+  // 删除属性
   delete target[key]
   if (!ob) {
     return
   }
+  // 通过 ob 发送通知
   ob.dep.notify()
 }
 
