@@ -49,6 +49,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // check cache
+    // 1. 读取缓存中的CompiledFunctionResult 对象, 如果有直接返回
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
@@ -57,6 +58,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // compile
+    // 2. 把模板编译为编译对象(render, staticRenderFns), 字符串形式的js代码
     const compiled = compile(template, options)
 
     // check compilation errors/tips
